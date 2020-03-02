@@ -89,7 +89,7 @@
 
 #include "idd_io_hal.h"
 
-#define PIN_INT 46 //(P1.14)
+#define PIN_INT 45 //(P1.13)
 
 #define ODR_NONE       0 /* Asynchronous sensors don't need to have a configured ODR */
 
@@ -117,7 +117,6 @@
 #define USE_GRAVITY 0
 #define USE_LINACC  0
 #define USE_B2S     0
-
 
 /************Parameters for BLE********************/
 #define DEVICE_NAME                     "IMU_ICM20948"                         /**< Name of device. Will be included in the advertising data. */
@@ -675,7 +674,7 @@ static void sensor_event_cb(const inv_sensor_event_t * event, void * arg)
               icm20948Data.theta  = (event->data.orientation.y);
               icm20948Data.phi    = (event->data.orientation.z);
               ble_icm20948_data_change(m_conn_handle, &m_icm20948, &icm20948Data);
-              INV_MSG(INV_MSG_LEVEL_INFO, ",%d,%d,%d",
+              /*INV_MSG(INV_MSG_LEVEL_INFO, ",%d,%d,%d",
                                 (int)(event->data.orientation.x),
                                 (int)(event->data.orientation.y),
                                 (int)(event->data.orientation.z));
@@ -729,9 +728,9 @@ static void interrupt_init()
     in_config.pull = NRF_GPIO_PIN_PULLUP;
 
     err_code = nrf_drv_gpiote_in_init(PIN_INT, &in_config, ext_interrupt_cb);
-    APP_ERROR_CHECK(err_code);		
+    APP_ERROR_CHECK(err_code);
 
-    nrf_drv_gpiote_in_event_enable(PIN_INT, true);	
+    nrf_drv_gpiote_in_event_enable(PIN_INT, true);
 }
 
 /*void timer_handler(nrf_timer_event_t event_type, void* p_context)
@@ -802,6 +801,26 @@ static uint8_t dmp3_image[] = {
  #include "Invn/Images/icm20948_img.dmp3a.h"
 };
 
+void output_voltage_setup(void)
+{
+    // Configure UICR_REGOUT0 register only if it is set to default value.
+    if ((NRF_UICR->REGOUT0 & UICR_REGOUT0_VOUT_Msk) ==
+        (UICR_REGOUT0_VOUT_DEFAULT << UICR_REGOUT0_VOUT_Pos))
+    {
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+
+        NRF_UICR->REGOUT0 = (NRF_UICR->REGOUT0 & ~((uint32_t)UICR_REGOUT0_VOUT_Msk)) |
+                            (UICR_REGOUT0_VOUT_1V8 << UICR_REGOUT0_VOUT_Pos);
+
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+
+        // System reset is needed to update UICR registers.
+        NVIC_SystemReset();
+    }
+}
+
 /*
  * serif_hal object that abstract low level serial interface between host and device
  */
@@ -811,6 +830,12 @@ int main(void)
     int rc = 0;
     inv_device_t * device; /* just a handy variable to keep the handle to device object */
     uint8_t whoami;
+
+    if (NRF_POWER->MAINREGSTATUS &
+       (POWER_MAINREGSTATUS_MAINREGSTATUS_High << POWER_MAINREGSTATUS_MAINREGSTATUS_Pos))
+    {
+        output_voltage_setup();
+    }
 
     // Initialize the application timer module.
     log_init();
@@ -858,6 +883,7 @@ int main(void)
      */
     rc += inv_device_whoami(device, &whoami);
     /* ... do something with whoami */
+
     /*
      * Configure and initialize the Icm20948 device
      */
@@ -920,6 +946,7 @@ int main(void)
                 __enable_irq();
             }
         }
+        nrf_pwr_mgmt_run();
     }
 
     /*
@@ -948,7 +975,7 @@ static void check_rc(int rc)
     }
 }
 
-#ifdef INV_MSG_ENABLE
+#if INV_MSG_ENABLE
 /*
 * Printer function for message facility
 */
