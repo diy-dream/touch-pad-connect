@@ -693,16 +693,25 @@ int inv_icm20948_set_int1_assertion(struct inv_icm20948 * s, int enable)
 	*/
 
 	// Set int1 enable
-	result |= inv_icm20948_read_mems_reg(s, REG_INT_ENABLE, 1, &reg_int_enable);
+	/*result |= inv_icm20948_read_mems_reg(s, REG_INT_ENABLE, 1, &reg_int_enable);
 
 	if(enable) { // Enable bit
 		reg_int_enable |= BIT_DMP_INT_EN;
 	}
 	else { // Disable bit
 		reg_int_enable &= ~BIT_DMP_INT_EN;
-	}
+	}*/
 
-	result |= inv_icm20948_write_single_mems_reg(s, REG_INT_ENABLE, reg_int_enable);
+	result = inv_icm20948_write_single_mems_reg(s, REG_INT_ENABLE, BIT_WOM_INT_EN);
+
+        result = inv_icm20948_write_single_mems_reg(s, REG_INT_ENABLE_1, 0x00);
+
+        result = inv_icm20948_write_single_mems_reg(s, REG_INT_ENABLE_2, 0x00);
+
+        result = inv_icm20948_write_single_mems_reg(s, REG_INT_ENABLE_3, 0x00);
+
+        result |= inv_icm20948_read_mems_reg(s, REG_INT_ENABLE, 1, &reg_int_enable);
+
 
 	return result;
 }

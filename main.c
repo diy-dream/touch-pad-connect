@@ -87,6 +87,12 @@
 #include "Invn/Devices/DeviceIcm20948.h"
 #include "Invn/EmbUtils/Message.h"
 
+#include "Icm20948.h"
+#include "Icm20948MPUFifoControl.h"
+#include "Icm20948DataBaseDriver.h"
+#include "Icm20948Transport.h"
+#include "Icm20948Defs.h"
+
 #include "idd_io_hal.h"
 
 #define PIN_INT 45 //(P1.13)
@@ -97,7 +103,7 @@
  * Set O/1 to start the following sensors in this example
  * NB: In case you are using IddWrapper (USE_IDDWRAPPER = 1), the following compile switch will have no effect.
  */
-#define USE_RAW_ACC 0
+#define USE_RAW_ACC 1
 #define USE_RAW_GYR 0
 #define USE_GRV     0
 #define USE_CAL_ACC 0
@@ -107,7 +113,7 @@
 #define USE_UCAL_MAG 0
 #define USE_RV      0    /* requires COMPASS*/
 #define USE_GEORV   0    /* requires COMPASS*/
-#define USE_ORI     1    /* requires COMPASS*/
+#define USE_ORI     0    /* requires COMPASS*/
 #define USE_STEPC   0
 #define USE_STEPD   0
 #define USE_SMD     0
@@ -708,8 +714,12 @@ static void sensor_event_cb(const inv_sensor_event_t * event, void * arg)
  */
 void ext_interrupt_cb(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    last_irq_time = inv_icm20948_get_time_us();
-    irq_from_device = 1;
+    //last_irq_time = inv_icm20948_get_time_us();
+    //irq_from_device = 1;
+    short int_read;
+    inv_icm20948_identify_interrupt(icm20948_instance, &int_read);
+
+    INV_MSG(INV_MSG_LEVEL_INFO, "");
 }
 
 void log_init(void){
@@ -762,17 +772,40 @@ static void interrupt_init()
     nrf_drv_timer_enable(&TIMER_0);
 }*/
 
+static bool on_off = true;
+
 void timer_handler(void * p_context)
 {
     //NRF_LOG_INFO("%d", app_timer_cnt_get()/ 32.768);
+    if(on_off){
+        inv_icm20948_set_chip_power_state(icm20948_instance, CHIP_AWAKE, 1);
+        on_off = false;
+    }else{
+        inv_icm20948_set_chip_power_state(icm20948_instance, CHIP_AWAKE, 0);
+        on_off = true;
+    }
+}
+
+/**@brief Function starting the internal LFCLK oscillator.
+ *
+ * @details This is needed by RTC1 which is used by the Application Timer
+ *          (When SoftDevice is enabled the LFCLK is always running and this is not needed).
+ */
+static void lfclk_request(void)
+{
+    ret_code_t err_code = nrf_drv_clock_init();
+    APP_ERROR_CHECK(err_code);
+    nrf_drv_clock_lfclk_request(NULL);
 }
 
 /**@brief Function for the Timer initialization.
  *
  * @details Initializes the timer module.
  */
-static void timers_init(void)
+static void timers_init1(void)
 {
+    lfclk_request();
+
     // Initialize timer module, making it use the scheduler
     ret_code_t err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
@@ -780,7 +813,18 @@ static void timers_init(void)
     err_code = app_timer_create(&m_timer, APP_TIMER_MODE_REPEATED, timer_handler);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(m_timer, APP_TIMER_TICKS(1), NULL);
+    err_code = app_timer_start(m_timer, APP_TIMER_TICKS(2000), NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for the Timer initialization.
+ *
+ * @details Initializes the timer module.
+ */
+static void timers_init2(void)
+{
+    // Initialize timer module, making it use the scheduler
+    ret_code_t err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
 }
 
@@ -795,7 +839,7 @@ static inv_sensor_listener_t sensor_listener = {
 /*
  * States for icm20948 device object
  */
-static inv_device_icm20948_t device_icm20948; 
+static inv_device_icm20948_t device_icm20948;
 static uint8_t dmp3_image[] = {
         //0
  #include "Invn/Images/icm20948_img.dmp3a.h"
@@ -838,24 +882,26 @@ int main(void)
     }
 
     // Initialize the application timer module.
-    log_init();
-    timers_init();
+    //log_init();
+    timers_init1();
+    //timers_init2();
     power_management_init();
+#if 0
     ble_stack_init();
     gap_params_init();
     gatt_init();
     services_init();
     advertising_init();
     conn_params_init();
-    interrupt_init();
-
     advertising_start();
+#endif
+    interrupt_init();
 
 #ifdef INV_MSG_ENABLE
     /* Setup message logging */
     INV_MSG_SETUP(INV_MSG_LEVEL_MAX, msg_printer);
 #endif
-
+#if 0
     INV_MSG(INV_MSG_LEVEL_INFO, "###################################");
     INV_MSG(INV_MSG_LEVEL_INFO, "#        ICM20948 example         #");
     INV_MSG(INV_MSG_LEVEL_INFO, "###################################");
@@ -965,6 +1011,79 @@ int main(void)
     rc += inv_host_serif_close(idd_io_hal_get_serif_instance_i2c());
 
     return rc;
+#else
+    /*
+     * Open serial interface (SPI or I2C) before playing with the device
+     */
+    /* call low level drive initialization here... */
+    rc += inv_host_serif_open(idd_io_hal_get_serif_instance_i2c());
+    /*
+     * Create ICM20948 Device 
+     * Pass to the driver:
+     * - reference to serial interface object,
+     * - reference to listener that will catch sensor events,
+     */
+    //inv_device_icm20948_init2(&device_icm20948, &serif_instance, &sensor_listener, dmp3_image, sizeof(dmp3_image));
+    inv_device_icm20948_init(&device_icm20948, idd_io_hal_get_serif_instance_i2c(), &sensor_listener, dmp3_image, sizeof(dmp3_image));
+    
+    /*
+     * Simply get generic device handle from Icm20948 Device
+     */
+    device = inv_device_icm20948_get_base(&device_icm20948);
+    /*
+     * Just get the whoami
+     */
+    rc += inv_device_whoami(device, &whoami);
+    /* ... do something with whoami */
+
+    /*
+     * Configure and initialize the Icm20948 device
+     */
+    rc += inv_device_setup(device);
+    /*
+     * Now that device is ready, you must call inv_device_poll() function
+     * periodically or upon interrupt.
+     * The poll function will check for sensor events, and notify, if any,
+     * by means of the callback from the listener that was provided on device init.
+     */
+    rc += inv_device_poll(device);
+
+    uint64_t available_sensor_mask; /* To keep track of available sensors*/
+    unsigned i;
+    /*
+     * Check sensor availibitlity
+     * if rc value is 0, it means sensor is available,
+     * if rc value is INV_ERROR or INV_ERROR_BAD_ARG, sensor is NA
+     */
+    available_sensor_mask = 0;
+    for(i = 0; i < sizeof(sensor_list)/sizeof(sensor_list[0]); ++i) {
+        const int rc = inv_device_ping_sensor(device, sensor_list[i].type);
+        INV_MSG(INV_MSG_LEVEL_INFO, "Ping %s %s", inv_sensor_2str(sensor_list[i].type), (rc == 0) ? "OK" : "KO");
+        if(rc == 0) {
+            available_sensor_mask |= (1ULL << sensor_list[i].type);
+        }
+    }
+
+    /*
+     * Start all available sensors from the sensor list
+     */
+    for(i = 0; i < sizeof(sensor_list)/sizeof(sensor_list[0]); ++i) {
+        if(available_sensor_mask & (1ULL << sensor_list[i].type)) {
+            INV_MSG(INV_MSG_LEVEL_INFO, "Starting %s @ %u us", inv_sensor_2str(sensor_list[i].type), sensor_list[i].period_us);
+            rc = inv_device_set_sensor_period_us(device, sensor_list[i].type, sensor_list[i].period_us);
+            check_rc(rc);
+            rc += inv_device_start_sensor(device, sensor_list[i].type);
+            check_rc(rc);
+        }
+    }
+
+    //inv_icm20948_set_int1_assertion(icm20948_instance, 0);
+
+    for(;;){
+        nrf_pwr_mgmt_run();
+    }
+#endif
+
 }
 
 static void check_rc(int rc)

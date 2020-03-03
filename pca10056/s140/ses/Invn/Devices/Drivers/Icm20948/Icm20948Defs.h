@@ -106,6 +106,7 @@ extern "C" {
 
 #define REG_INT_ENABLE          (BANK_0 | 0x10)
 #define BIT_DMP_INT_EN                  0x02
+#define BIT_WOM_INT_EN                  0x08
 
 #define REG_INT_ENABLE_1        (BANK_0 | 0x11)
 #define BIT_DATA_RDY_3_EN               0x08
