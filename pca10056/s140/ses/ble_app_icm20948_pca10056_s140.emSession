@@ -1,11 +1,7 @@
 <!DOCTYPE CrossStudio_Session_File>
 <session>
  <Bookmarks/>
- <Breakpoints groups="Breakpoints" active_group="Breakpoints">
-  <BreakpointListItem trigger="" line="716" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="Invn/Devices/Drivers/Icm20948/Icm20948DataBaseDriver.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="781" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="../../../main.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="784" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="../../../main.c" useHWbreakpoint="false"/>
- </Breakpoints>
+ <Breakpoints groups="Breakpoints" active_group="Breakpoints"/>
  <ExecutionProfileWindow/>
  <FrameBufferWindow>
   <FrameBufferWindow bufferHeight="-1" addressSpace="" addressText="" bufferWidth="-1"/>
@@ -31,6 +27,8 @@
   <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;Invn;Devices"/>
   <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;Invn;Devices;Drivers"/>
   <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;Invn;Devices;Drivers;Icm20948"/>
+  <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;Invn;DynamicProtocol"/>
+  <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;Invn;VSensor"/>
   <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;nRF_Drivers"/>
   <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;nRF_Libraries"/>
   <ProjectSessionItem path="ble_app_icm20948_pca10056_s140;ble_app_icm20948_pca10056_s140;nRF_Log"/>
@@ -55,8 +53,8 @@
  </TraceWindow>
  <Watch1>
   <Watches active="1" update="Never">
-   <Watchpoint expression="reg_int_enable" name="reg_int_enable" radix="-1" linenumber="713" filename="Invn/Devices/Drivers/Icm20948/Icm20948DataBaseDriver.c"/>
-   <Watchpoint expression="int_read" name="int_read" radix="-1" linenumber="720" filename="../../../main.c"/>
+   <Watchpoint expression="reg_int_enable" name="reg_int_enable" radix="-1" linenumber="722" filename="Invn/Devices/Drivers/Icm20948/Icm20948DataBaseDriver.c"/>
+   <Watchpoint expression="int_read" name="int_read" radix="-1" linenumber="725" filename="../../../main.c"/>
   </Watches>
  </Watch1>
  <Watch2>
@@ -70,17 +68,26 @@
  </Watch4>
  <Files>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="93" useTextEdit="1" useBinaryEdit="0" left="0" path="nrf_drv_icm20948_twi.c" selected="0" top="69" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="20" y="806" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="790" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="49" y="671" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="664" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="41" useTextEdit="1" useBinaryEdit="0" left="0" path="idd_io_hal.c" selected="0" top="15" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="27" y="5965" useTextEdit="1" useBinaryEdit="0" left="0" path="../config/sdk_config.h" selected="0" top="5956" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="47" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948DataBaseDriver.c" selected="0" top="39" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="15" y="90" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948Defs.h" selected="0" top="81" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="47" y="468" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/DeviceIcm20948.c" selected="0" top="446" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="15" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948SelfTest.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="1" y="577" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948Setup.c" selected="0" top="568" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="5965" useTextEdit="1" useBinaryEdit="0" left="0" path="../config/sdk_config.h" selected="0" top="5956" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="77" y="713" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948DataBaseDriver.c" selected="0" top="693" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="91" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948Defs.h" selected="0" top="70" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="2" y="473" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/DeviceIcm20948.c" selected="0" top="359" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="273" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948SelfTest.c" selected="0" top="254" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="577" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948Setup.c" selected="0" top="568" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="23" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948Transport.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="57" y="52" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948MPUFifoControl.c" selected="0" top="15" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="52" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/Drivers/Icm20948/Icm20948MPUFifoControl.c" selected="0" top="15" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="987" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../nordic_sdk/components/libraries/timer/app_timer.c" selected="0" top="969" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="39" y="64" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/SensorTypes.h" selected="0" top="44" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="84" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/Devices/VSensorId.h" selected="0" top="60" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="368" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../nordic_sdk/components/libraries/pwr_mgmt/nrf_pwr_mgmt.c" selected="0" top="346" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="99" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../nordic_sdk/modules/nrfx/hal/nrf_gpio.h" selected="0" top="81" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="115" useTextEdit="1" useBinaryEdit="0" left="0" path="ble_icm20948.c" selected="0" top="95" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="105" useTextEdit="1" useBinaryEdit="0" left="0" path="ble_icm20948.h" selected="0" top="85" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="170" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/VSensor/VSensorData.h" selected="0" top="142" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="86" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/VSensor/VSensorType.h" selected="0" top="52" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="359" useTextEdit="1" useBinaryEdit="0" left="0" path="Invn/DynamicProtocol/DynProtocol.c" selected="0" top="319" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="ble_app_icm20948_pca10056_s140" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3711"/>
+ <ARMCrossStudioWindow activeProject="ble_app_icm20948_pca10056_s140" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Release" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

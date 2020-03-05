@@ -203,6 +203,8 @@ extern "C" {
 #define REG_ACCEL_SMPLRT_DIV_1  (BANK_2 | 0x10)
 #define REG_ACCEL_SMPLRT_DIV_2  (BANK_2 | 0x11)
 
+#define REG_ACCEL_WOM_THR       (BANK_2 | 0x13)
+
 #define REG_ACCEL_CONFIG        (BANK_2 | 0x14)
 #define SHIFT_ACCEL_FS                  1
 

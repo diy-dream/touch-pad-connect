@@ -103,16 +103,17 @@
  * Set O/1 to start the following sensors in this example
  * NB: In case you are using IddWrapper (USE_IDDWRAPPER = 1), the following compile switch will have no effect.
  */
-#define USE_RAW_ACC 1
+#define USE_RAW_ACC 0   /* USE FOR WOM */
 #define USE_RAW_GYR 0
 #define USE_GRV     0
+#define USE_CAL_ACC 0
 #define USE_CAL_ACC 0
 #define USE_CAL_GYR 0
 #define USE_CAL_MAG 0
 #define USE_UCAL_GYR 0
 #define USE_UCAL_MAG 0
 #define USE_RV      0    /* requires COMPASS*/
-#define USE_GEORV   0    /* requires COMPASS*/
+#define USE_GEORV   1    /* requires COMPASS*/
 #define USE_ORI     0    /* requires COMPASS*/
 #define USE_STEPC   0
 #define USE_STEPD   0
@@ -130,13 +131,13 @@
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
-#define APP_ADV_INTERVAL                64                                      /**< The advertising interval (in units of 0.625 ms; this value corresponds to 40 ms). */
+#define APP_ADV_INTERVAL                255                                     /**< The advertising interval (in units of 0.625 ms; this value corresponds to 159 ms). */
 #define APP_ADV_DURATION                BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED   /**< The advertising time-out (in units of seconds). When set to 0, we will never time out. */
 
 
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.5 seconds). */
 #define MAX_CONN_INTERVAL               MSEC_TO_UNITS(200, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (1 second). */
-#define SLAVE_LATENCY                   0                                       /**< Slave latency. */
+#define SLAVE_LATENCY                   2                                       /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)         /**< Connection supervisory time-out (4 seconds). */
 
 #define FIRST_CONN_PARAMS_UPDATE_DELAY  APP_TIMER_TICKS(20000)                  /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (15 seconds). */
@@ -480,6 +481,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("Connected");
+            nrf_drv_gpiote_in_event_enable(PIN_INT, true);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
@@ -487,6 +489,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("Disconnected");
+            nrf_drv_gpiote_in_event_enable(PIN_INT, false);
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             APP_ERROR_CHECK(err_code);
             advertising_start();
@@ -709,17 +712,33 @@ static void sensor_event_cb(const inv_sensor_event_t * event, void * arg)
     }
 }
 
+static bool send_1_0 = true;
+
 /*
  * Callback called upon rising edge on external interrupt line
  */
 void ext_interrupt_cb(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    //last_irq_time = inv_icm20948_get_time_us();
-    //irq_from_device = 1;
-    short int_read;
-    inv_icm20948_identify_interrupt(icm20948_instance, &int_read);
+#if 1
+    last_irq_time = inv_icm20948_get_time_us();
+    irq_from_device = 1;
+#elif 1
+    icm20948_data_t data;
 
-    INV_MSG(INV_MSG_LEVEL_INFO, "");
+    if(send_1_0){
+        data.phi    = 0xFFFF;
+        data.psi    = 0xFFFF;
+        data.theta  = 0xFFFF;
+        send_1_0 = 0;
+        ble_icm20948_data_change(m_conn_handle, &m_icm20948, &data);
+    }else{
+        data.phi    = 0x0000;
+        data.psi    = 0x0000;
+        data.theta  = 0x0000;
+        send_1_0 = 1;
+        ble_icm20948_data_change(m_conn_handle, &m_icm20948, &data);
+    }
+#endif
 }
 
 void log_init(void){
@@ -735,12 +754,11 @@ static void interrupt_init()
     APP_ERROR_CHECK(err_code);
 
     nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-    in_config.pull = NRF_GPIO_PIN_PULLUP;
+    //in_config.pull = NRF_GPIO_PIN_PULLUP;
+    in_config.pull = NRF_GPIO_PIN_NOPULL;
 
     err_code = nrf_drv_gpiote_in_init(PIN_INT, &in_config, ext_interrupt_cb);
     APP_ERROR_CHECK(err_code);
-
-    nrf_drv_gpiote_in_event_enable(PIN_INT, true);
 }
 
 /*void timer_handler(nrf_timer_event_t event_type, void* p_context)
@@ -777,6 +795,7 @@ static bool on_off = true;
 void timer_handler(void * p_context)
 {
     //NRF_LOG_INFO("%d", app_timer_cnt_get()/ 32.768);
+#if 0
     if(on_off){
         inv_icm20948_set_chip_power_state(icm20948_instance, CHIP_AWAKE, 1);
         on_off = false;
@@ -784,6 +803,7 @@ void timer_handler(void * p_context)
         inv_icm20948_set_chip_power_state(icm20948_instance, CHIP_AWAKE, 0);
         on_off = true;
     }
+#endif
 }
 
 /**@brief Function starting the internal LFCLK oscillator.
@@ -886,7 +906,7 @@ int main(void)
     timers_init1();
     //timers_init2();
     power_management_init();
-#if 0
+#if 1
     ble_stack_init();
     gap_params_init();
     gatt_init();
@@ -895,13 +915,16 @@ int main(void)
     conn_params_init();
     advertising_start();
 #endif
+
+#if 1
     interrupt_init();
+#endif
 
 #ifdef INV_MSG_ENABLE
     /* Setup message logging */
     INV_MSG_SETUP(INV_MSG_LEVEL_MAX, msg_printer);
 #endif
-#if 0
+#if 1
     INV_MSG(INV_MSG_LEVEL_INFO, "###################################");
     INV_MSG(INV_MSG_LEVEL_INFO, "#        ICM20948 example         #");
     INV_MSG(INV_MSG_LEVEL_INFO, "###################################");
@@ -982,6 +1005,7 @@ int main(void)
     rc += inv_device_poll(device);
 
     while(1){
+#if 1
         if (irq_from_device) {
             rc = inv_device_poll(device);
             check_rc(rc);
@@ -992,6 +1016,7 @@ int main(void)
                 __enable_irq();
             }
         }
+#endif
         nrf_pwr_mgmt_run();
     }
 
@@ -1011,7 +1036,7 @@ int main(void)
     rc += inv_host_serif_close(idd_io_hal_get_serif_instance_i2c());
 
     return rc;
-#else
+#elif 1
     /*
      * Open serial interface (SPI or I2C) before playing with the device
      */
@@ -1077,11 +1102,21 @@ int main(void)
         }
     }
 
-    //inv_icm20948_set_int1_assertion(icm20948_instance, 0);
+    //inv_icm20948_set_chip_power_state(icm20948_instance, CHIP_AWAKE, 1);
+
+    //inv_icm20948_set_chip_power_state(icm20948_instance, CHIP_LP_ENABLE, 1);
+
+    inv_icm20948_set_int1_assertion(icm20948_instance, 0);
+
+    //inv_icm20948_sleep_mems(icm20948_instance);
 
     for(;;){
         nrf_pwr_mgmt_run();
     }
+#elif 1
+    for(;;){
+        nrf_pwr_mgmt_run();
+    }    
 #endif
 
 }

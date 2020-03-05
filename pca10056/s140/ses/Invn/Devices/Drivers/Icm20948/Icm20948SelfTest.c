@@ -271,7 +271,7 @@ static int inv_setup_selftest(struct inv_icm20948 * s, struct recover_regs * rec
     /*   Perform a soft-reset of the chip by setting the MSB of PWR_MGMT_1 register
     * This will clear any prior states in the chip
     */
-    result |= inv_icm20948_write_single_mems_reg(s, REG_PWR_MGMT_1, BIT_H_RESET);               
+    result |= inv_icm20948_write_single_mems_reg(s, REG_PWR_MGMT_1, BIT_H_RESET);
     inv_icm20948_sleep_us(100000); //100ms delay after soft reset--yd
         
     // Wake up
